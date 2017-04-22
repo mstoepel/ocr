@@ -38,11 +38,18 @@ def load(test=False,cols=None):
 
 X, y = load()
 
+def load2d(test=False,cols=None):
+    X, y = load(test=test)
+    X = X.reshape(-1,765,990,1)
+    return X , y
+
+X, y = load2d()
+
 
 batch_size = 100
 nb_classes = 20
 nb_epoch = 250
-img_rows, img_cols = 765,990
+img_rows, img_cols = 765, 990
 im_channels = 3
 nb_filters1 = 12
 nb_filters2 = 24
