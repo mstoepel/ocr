@@ -86,3 +86,27 @@ net1.add(Activation('softmax'))
 net1.compile(loss='categorical_crossentropy',optimizer='adadelta',metrics=['accuracy'])
 
 net1.fit(X,y)
+
+
+
+
+
+# Evaluating
+sample1 = load2d(test=True)[0][1]
+sample1 = sample1.reshape(1,765,990,1)
+y_pred1 = net1.predict(sample1)[0]
+
+from PIL import Image
+im = Image.open('C:/ML/datarole/images/belleville_Page_002.tiff')
+
+from matplotlib import pyplot
+def plot_sample(x,y,axis):
+    im = x
+    axis.imshow(im,cmap='gray')
+    axis.scatter(y[0::2] * 5100, y[1::2] * 6600, marker='x', s=10)
+
+fig = pyplot.figure()
+ax = fig.add_subplot(1,2,1,xticks=[],yticks=[])
+plot_sample(im,y_pred1,ax)
+pyplot.show()
+
