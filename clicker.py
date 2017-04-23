@@ -53,11 +53,11 @@ new_df = pd.DataFrame({'filename':[args["image"][9:]],'owner_a':clicks[0][0][0],
                        'loc_d':clicks[1][1][1],'desc_a':clicks[2][0][0],'desc_b':clicks[2][0][1],'desc_c':clicks[2][1][0],'desc_d':clicks[2][1][1],'val_a':clicks[3][0][0],'val_b':clicks[3][0][1],'val_c':clicks[3][1][0],
                        'val_d':clicks[3][1][1],'fee_a':clicks[4][0][0],'fee_b':clicks[4][0][1],'fee_c':clicks[4][1][0],'fee_d':clicks[4][1][1],'pixels':pix_str})
 
-new_df.to_csv("C:/ML/datarole/training.csv",index=False)
+# new_df.to_csv("C:/ML/datarole/training.csv",index=False)
 
 df = pd.read_csv("C:/ML/datarole/training.csv")
-# df = df.append(new_df)
-# df.to_csv("C:/ML/datarole/training.csv")
+df = df.append(new_df)
+df.to_csv("C:/ML/datarole/training.csv",index=False)
 # print(pix_str)
 print(len(pix_str))
 # print(len(image.tolist()))
