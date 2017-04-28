@@ -58,25 +58,29 @@ def hocr_to_lines(hocr_path):
     soup = BeautifulSoup(file(hocr_path))
     dims = re.search(r'(-?\d{4}) (-?\d{4})',soup.select('.ocr_page')[0].get('title'))
     width, length = (int(v) for v in dims.groups())
-    for page in soup.select('.ocr_page'):
-        i = 0
-        p = re.match(r'image houses\\(0\d+)',page.get('title'))
+    # for page in soup.select('.ocr_page'):
+    #     i = 0
+    #     p = re.match(r'image houses\\(0\d+)',page.get('title'))
+    #     assert p
+    #     pg = p.groups()[i]
+    for tag in soup.select('.ocr_line'):
+        # if re.match(r'image houses\\(0\d+)',tag.fetchParents()[i].get('title')) == pg: # figure out a way to only work on line if on appropriate page. currently repeating
+        p = re.match(r'image houses\\(0\d+)',tag.fetchParents()[0].get('title'))
         assert p
-        pg = p.groups()[i]
-        for tag in soup.select('.ocr_line'):
-            # if re.match(r'image houses\\(0\d+)',tag.fetchParents()[i].get('title')) == pg: # figure out a way to only work on line if on appropriate page. currently repeating
-            m = re.match(r'bbox (-?\d+) (-?\d+) (-?\d+) (-?\d+)', tag.get('title'))
-            assert m
-            x0, y0, x1, y1 = (int(v) for v in m.groups())
-            lines.append({
-                'text': tag.text,
-                'x1': x0,
-                'y1': y0,
-                'x2': x1,
-                'y2': y1,
-                'page': pg
-            })
-        i +=1
+        pg = p.groups()[0]
+        # print pg
+        m = re.match(r'bbox (-?\d+) (-?\d+) (-?\d+) (-?\d+)', tag.get('title'))
+        assert m
+        x0, y0, x1, y1 = (int(v) for v in m.groups())
+        lines.append({
+            'text': tag.text,
+            'x1': x0,
+            'y1': y0,
+            'x2': x1,
+            'y2': y1,
+            'page': pg
+        })
+    # i +=1
     # hOCR specifies that y-coordinates are from the bottom.
     # We fix that here. We don't know the height of the image, so we use the
     # largest y-value in its place.
@@ -94,6 +98,7 @@ if __name__ == '__main__':
     lines =  sort_lines(lines)
     lines = classify_text(lines)
     output = ''
+    print lines
     for idx, line in enumerate(lines):
         if line.get('remove'):
             lines.pop(idx)
@@ -118,9 +123,9 @@ if __name__ == '__main__':
     # for idx, line in enumerate(lines):
     #     if line.get('type') == 'Garbage':
     #         lines.pop(idx)
-    print len(lines)
+    # print len(lines)
     [lines.pop(idx) for idx, line in enumerate(lines) if line.get('type') == 'Garbage']
-    print len(lines)
+    # print len(lines)
     owners = [line['text'] for idx, line in enumerate(lines) if line['type'] == 'Owner']
     locations = [line['text'] for idx, line in enumerate(lines) if line['type'] == 'Location']
     descriptions = [line['text'] for idx, line in enumerate(lines) if line['type'] == 'Description']
@@ -133,9 +138,19 @@ if __name__ == '__main__':
     print len(con_val)
     print len(perm_fee)
 
+    # print type(descriptions)
+    descriptions.extend(["hi","hey"])
+
+    print len(descriptions)
+
     df = pd.DataFrame({'Owner':owners,'Location':locations,'Description':descriptions,'Construction Value':con_val,'Permit Fee':perm_fee})
 
     f.write(output.encode('utf8'))
     f.close()
-    print df
+    print df[97:111]['Description']
+    print df.iloc[103]['Description']
     df.to_csv('output.csv')
+
+    ## missing page 9 of 10 shed 8" x 12". not even in 0009 folder. must be gpageseg issue? or was it tagged as garbage?
+    #  THE PROBLEM IS THAT SHED 8 x 12 IS GETTING CONNECTED TO 1701 MASCOUTAH AV #16. NEED TO KEEP THE LINES SEPARATED.
+    # SOMEHOW GETTING CONNECTED WITH THE LOCATION IN THAT ROW. FIX THAT
