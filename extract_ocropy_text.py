@@ -98,7 +98,7 @@ if __name__ == '__main__':
     lines =  sort_lines(lines)
     lines = classify_text(lines)
     output = ''
-    print lines
+    # print lines
     for idx, line in enumerate(lines):
         if line.get('remove'):
             lines.pop(idx)
@@ -125,32 +125,42 @@ if __name__ == '__main__':
     #         lines.pop(idx)
     # print len(lines)
     [lines.pop(idx) for idx, line in enumerate(lines) if line.get('type') == 'Garbage']
-    # print len(lines)
+
+    # check = ['Owner','Owner','Location','Description','Construction Value','Permit Fee']
+    #
+    # for i in range(len(lines)):
+    #     if lines[i]['type'] != check[i%6]:
+    #         lines.insert(i,{'text':'Filler','type':check[i%5]})
+
+    # print type(lines)
+
     owners = [line['text'] for idx, line in enumerate(lines) if line['type'] == 'Owner']
     locations = [line['text'] for idx, line in enumerate(lines) if line['type'] == 'Location']
     descriptions = [line['text'] for idx, line in enumerate(lines) if line['type'] == 'Description']
     con_val = [line['text'] for idx, line in enumerate(lines) if line['type'] == 'Construction Value']
     perm_fee = [line['text'] for idx, line in enumerate(lines) if line['type'] == 'Permit Fee']
+    page = [line['page'] for i in range(len(owners))]
 
-    print len(owners)
-    print len(locations)
-    print len(descriptions)
-    print len(con_val)
-    print len(perm_fee)
-
+    # print len(owners)
+    # print len(locations)
+    # print len(descriptions)
+    # print len(con_val)
+    # print len(perm_fee)
+    #
     # print type(descriptions)
     descriptions.extend(["hi","hey"])
 
-    print len(descriptions)
+    # print len(descriptions)
 
     df = pd.DataFrame({'Owner':owners,'Location':locations,'Description':descriptions,'Construction Value':con_val,'Permit Fee':perm_fee})
 
     f.write(output.encode('utf8'))
     f.close()
-    print df[97:111]['Description']
-    print df.iloc[103]['Description']
+    # print df[97:111]['Description']
+    # print df.iloc[103]['Description']
     df.to_csv('output.csv')
 
+    print df
     ## missing page 9 of 10 shed 8" x 12". not even in 0009 folder. must be gpageseg issue? or was it tagged as garbage?
     #  THE PROBLEM IS THAT SHED 8 x 12 IS GETTING CONNECTED TO 1701 MASCOUTAH AV #16. NEED TO KEEP THE LINES SEPARATED.
     # SOMEHOW GETTING CONNECTED WITH THE LOCATION IN THAT ROW. FIX THAT
