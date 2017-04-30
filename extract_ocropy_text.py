@@ -204,7 +204,8 @@ if __name__ == '__main__':
     # print len(descriptions)
 
     df = pd.DataFrame({'Owner':owners,'Owner Page':owners_pg,'Location':locations,'Location Page':locations_pg,'Description':descriptions,'Description Page':locations_pg,'Construction Value':con_val,
-                       'Construction Value Page':con_val_pg,'Permit Fee':perm_fee,'Permit Fee Page':perm_fee_pg})
+                       'Construction Value Page':con_val_pg,'Permit Fee':perm_fee,'Permit Fee Page':perm_fee_pg},columns=['Owner','Owner Page','Location','Location Page','Description','Description Page',
+                                                                                                                       'Construction Value','Construction Value Page','Permit Fee','Permit Fee Page'])
 
     f.write(output.encode('utf8'))
     f.close()
