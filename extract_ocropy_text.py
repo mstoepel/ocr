@@ -55,6 +55,7 @@ def sort_lines(lines):
 
 def hocr_to_lines(hocr_path):
     lines = []
+    pages = []
     soup = BeautifulSoup(file(hocr_path))
     dims = re.search(r'(-?\d{4}) (-?\d{4})',soup.select('.ocr_page')[0].get('title'))
     width, length = (int(v) for v in dims.groups())
@@ -80,6 +81,10 @@ def hocr_to_lines(hocr_path):
             'y2': y1,
             'page': pg
         })
+        pages.append(pg)
+    pages = set(pages)
+    pages = list(pages)
+    pages.sort()
     # i +=1
     # hOCR specifies that y-coordinates are from the bottom.
     # We fix that here. We don't know the height of the image, so we use the
@@ -88,20 +93,53 @@ def hocr_to_lines(hocr_path):
     for line in lines:
         line['y1'] =  line['y1']
         line['y2'] =  line['y2']
-    return lines, width, length
+    return lines, width, length, pages
+
+def num_entry_check(l,l_pg,pages,num):
+    for i in range(len(pages)):
+        if l_pg.count(pages[i]) < num:
+            diff = num - l_pg.count(pages[i])
+            if diff == 1:
+                l.insert(((i+1)*num)-1,'XXXX')
+            elif diff == 2:
+                l.insert(((i+1)*(num-1))-1,'XXXX','XXXX')
+            elif diff == 3:
+                l.insert(((i+1)*(num-2))-1,'XXXX','XXXX','XXXX')
+            elif diff == 4:
+                l.insert(((i+1)*(num-3))-1,'XXXX','XXXX','XXXX','XXXX')
+            print l
+        elif l_pg.count(pages[i]) > num:
+            diff = l_pg.count(pages[i]) - num
+            if diff == 1:
+                del l[((i+1)*num)]
+            elif diff == 2:
+                removeset = list([((i+1)*num),(((i+1)*num))+1])
+                removeset = set(removeset)
+                l = [v for i, v in enumerate(l) if i not in removeset]
+            elif diff == 3:
+                removeset = list([((i+1)*num),(((i+1)*num))+1,(((i+1)*num)+2)])
+                removeset = set(removeset)
+                l = [v for i, v in enumerate(l) if i not in removeset]
+            elif diff == 4:
+                removeset = list([((i+1)*num),(((i+1)*num))+1,(((i+1)*num)+2),(((i+1)*num)+3)])
+                removeset = set(removeset)
+                l = [v for i, v in enumerate(l) if i not in removeset]
+        else:
+            pass
+
 
 
 if __name__ == '__main__':
     _, hocr_path = sys.argv
     f = open('ocr_output.txt','w')
-    lines,width,length = hocr_to_lines(hocr_path)
+    lines,width,length,pages = hocr_to_lines(hocr_path)
     lines =  sort_lines(lines)
     lines = classify_text(lines)
     output = ''
     # print lines
-    for idx, line in enumerate(lines):
-        if line.get('remove'):
-            lines.pop(idx)
+    # for idx, line in enumerate(lines):
+    #     if line.get('remove'):
+    #         lines.pop(idx)
     for idx, line in enumerate(lines):
         if lines[idx].get('continuation'):
             if lines[idx-1].get('continuation'):
@@ -135,11 +173,24 @@ if __name__ == '__main__':
     # print type(lines)
 
     owners = [line['text'] for idx, line in enumerate(lines) if line['type'] == 'Owner']
+    owners_pg = [line['page'] for idx, line in enumerate(lines) if line['type'] == 'Owner']
     locations = [line['text'] for idx, line in enumerate(lines) if line['type'] == 'Location']
+    locations_pg = [line['page'] for idx, line in enumerate(lines) if line['type'] == 'Location']
     descriptions = [line['text'] for idx, line in enumerate(lines) if line['type'] == 'Description']
+    descriptions_pg = [line['page'] for idx, line in enumerate(lines) if line['type'] == 'Description']
     con_val = [line['text'] for idx, line in enumerate(lines) if line['type'] == 'Construction Value']
+    con_val_pg = [line['page'] for idx, line in enumerate(lines) if line['type'] == 'Construction Value']
     perm_fee = [line['text'] for idx, line in enumerate(lines) if line['type'] == 'Permit Fee']
-    page = [line['page'] for i in range(len(owners))]
+    perm_fee_pg = [line['page'] for idx, line in enumerate(lines) if line['type'] == 'Permit Fee']
+    # page = [line['page'] for i in range(len(owners))]
+
+    num_entry_check(owners, owners_pg, pages, 14)
+    num_entry_check(locations,locations_pg,pages,14)
+    num_entry_check(descriptions, descriptions_pg, pages, 14)
+    num_entry_check(con_val, con_val_pg, pages, 14)
+    num_entry_check(perm_fee, perm_fee_pg, pages, 14)
+
+    # if owners_pg.count(i in pages)
 
     # print len(owners)
     # print len(locations)
@@ -148,11 +199,12 @@ if __name__ == '__main__':
     # print len(perm_fee)
     #
     # print type(descriptions)
-    descriptions.extend(["hi","hey"])
+    # descriptions.extend(["hi","hey"])
 
     # print len(descriptions)
 
-    df = pd.DataFrame({'Owner':owners,'Location':locations,'Description':descriptions,'Construction Value':con_val,'Permit Fee':perm_fee})
+    df = pd.DataFrame({'Owner':owners,'Owner Page':owners_pg,'Location':locations,'Location Page':locations_pg,'Description':descriptions,'Description Page':locations_pg,'Construction Value':con_val,
+                       'Construction Value Page':con_val_pg,'Permit Fee':perm_fee,'Permit Fee Page':perm_fee_pg})
 
     f.write(output.encode('utf8'))
     f.close()
